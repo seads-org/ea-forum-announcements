@@ -35,19 +35,23 @@ class Tuner:
             test_loader = DataLoader(dataset, batch_size=batch_size, sampler=test_sampler)
 
             self.trainer.train(lr, train_loader, test_loader, trial=trial, logging=logging)
-            _, test_recall = self.trainer.test(self.trainer.model, test_loader, self.trainer.metrics, logging=logging)
-            folds_metrics[fold] = test_recall
+            test_specificity, test_recall = self.trainer.test(self.trainer.model, test_loader, self.trainer.metrics,
+                                                              logging=logging)
+            folds_metrics[fold] = (test_recall + test_specificity) / 2
 
+        if trial is not None:
+            self.trainer.model.apply(self.trainer.weight_reset)
         return np.mean(folds_metrics)
 
 
 if __name__ == "__main__":
-    dataset_size = len(pd.read_csv(datap("labeled_posts_embedded.csv")))
+    dataset_size = len(pd.read_csv(datap("labeled_posts_embedded_e5base.csv")))
     tuner = Tuner(Trainer(), dataset_size)
 
+    model_name = f"e5base_embeddings_classifier:{str(date.today())}"
     study = optuna.create_study(direction="maximize",
                                 storage="sqlite:///db.sqlite3",
-                                study_name=f"ea_embeddings_classifier:{str(date.today())}",
+                                study_name=model_name,
                                 load_if_exists=True)
 
     # With cross validation there are warnings about the value of objective
@@ -59,14 +63,14 @@ if __name__ == "__main__":
 
     trial = study.best_trial
 
-    print('The best objective: {}'.format(trial.value))
+    print("The best objective: {}".format(trial.value))
     print("The best hyperparameters: {}".format(trial.params))
 
     # Retrain the best model on the whole dataset
-    trainer = Trainer()
+    trainer = Trainer(epochs=10)
     lr, batch_size = trial.params["lr"], trial.params["batch_size"]
     dataset = load_data()
     data_loader = DataLoader(dataset, batch_size=batch_size)
     train_metrics, test_metrics = trainer.train(lr, data_loader, data_loader)
 
-    torch.save(trainer.model, os.path.join(modelp(), f"ea_embeddings_classifier:{str(date.today())}.pth"))
+    torch.save(trainer.model, os.path.join(modelp(), f"{model_name}.pth"))

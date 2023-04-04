@@ -4,7 +4,6 @@ from torch import nn
 class PostClassifier(nn.Module):
     def __init__(self, embed_dim=768, num_classes=3):
         super(PostClassifier, self).__init__()
-
         self.head = nn.Linear(embed_dim, num_classes)
         self.init_weights()
 
