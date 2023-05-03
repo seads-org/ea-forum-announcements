@@ -7,7 +7,7 @@ import pandas as pd
 import torch.nn.functional as F
 from pandas import DataFrame
 from torch import Tensor
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from transformers import AutoTokenizer, AutoModel
 
 from datasets import load_from_disk
@@ -32,14 +32,13 @@ def get_paragraph_split(data):
     return paragraph_split
 
 
-def embed_e5base(paragraph_split, model, tokenizer):
+def embed_e5base(paragraph_split, model, tokenizer, batch_size):
     """
     Embed posts' paragraphs using e5-base model
     Each input text should start with "query: " or "passage: ".
     For tasks other than retrieval, you can simply use the "query: " prefix.
     """
     paragraph_split.text = paragraph_split.text.apply(lambda x: "query: " + x)
-    batch_size = 1  # memory
     n_batches = math.ceil(len(paragraph_split) / batch_size)
     paragraphs_embeddings = np.zeros((n_batches, EMBEDDING_SIZE))
     for idx in tqdm(range(n_batches)):
@@ -73,16 +72,17 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     nltk.download('punkt')
+    tqdm.pandas()
     data = load_from_disk(RAW_DATA_PATH).to_pandas()
     paragraph_split = get_paragraph_split(data)
-
+    batch_size = 1 # memory
     if args.embeddings == "ea-forum":
         model = SentenceTransformer.load(SBERT_PATH)
-        paragraphs_embeddings = model.encode(paragraph_split.text[:1], batch_size=1, show_progress_bar=True)
+        paragraphs_embeddings = model.encode(paragraph_split.text, batch_size=batch_size, show_progress_bar=True)
     elif args.embeddings == "e5-base":
         model = AutoModel.from_pretrained('intfloat/e5-base')
         tokenizer = AutoTokenizer.from_pretrained('intfloat/e5-base')
-        paragraphs_embeddings = embed_e5base(paragraph_split, model, tokenizer)
+        paragraphs_embeddings = embed_e5base(paragraph_split, model, tokenizer, batch_size)
     else:
         raise ValueError(f"Unknown embedding type: {args.embeddings}, available: ea-forum or e5-base")
 

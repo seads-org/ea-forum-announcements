@@ -168,8 +168,8 @@ if __name__ == "__main__":
 
     dataset = load_data(args.filename)
     if args.train_test_split:
-        train_indices = np.loadtxt(datap("train_indices.csv"))
-        test_indices = np.loadtxt(datap("train_indices.csv"))
+        train_indices = np.loadtxt(datap("train_indices.csv"), dtype=np.int32)
+        test_indices = np.loadtxt(datap("test_indices.csv"), dtype=np.int32)
         train_dataset = Subset(dataset, train_indices)
         test_dataset = Subset(dataset, test_indices)
     else:

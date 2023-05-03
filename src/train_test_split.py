@@ -8,7 +8,7 @@ from src.paths import datap
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train-fraction", default=0.9)
+    parser.add_argument("--train-fraction", default=0.6)
     args = parser.parse_args()
 
     dataset_filename = "labeled_posts_embedded.csv"
