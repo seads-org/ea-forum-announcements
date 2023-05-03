@@ -20,16 +20,13 @@ from src.paths import datap
 
 def get_paragraph_split(data):
     """Split posts to paragraphs of max 400 words"""
+    tqdm.pandas()
     data['paragraphs'] = data.body.progress_map(extract_paragraphs)
     data['paragraphs'] = data.paragraphs.progress_map(lambda p: split_long_paragraphs(p, max_n_words=MAX_TOKENS))
     data = data[~data.apply(lambda x: x.paragraphs.empty, axis=1)]
     data['paragraphs_split'] = data.paragraphs.progress_map(
         lambda x: collapse_paragraphs_iteratively(x, max_n_words=MAX_TOKENS))
-    paragraph_split = pd.concat([
-        DataFrame({"postId": r._id, "text": r.paragraphs_split.text.values, "label": r.label})
-        for pid, r in data.iterrows()
-    ], ignore_index=True)
-    return paragraph_split
+    return data
 
 
 def embed_e5base(paragraph_split, model, tokenizer, batch_size):
@@ -72,9 +69,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     nltk.download('punkt')
-    tqdm.pandas()
     data = load_from_disk(RAW_DATA_PATH).to_pandas()
-    paragraph_split = get_paragraph_split(data)
+    data = get_paragraph_split(data)
+    paragraph_split = pd.concat([
+        DataFrame({"postId": r._id, "text": r.paragraphs_split.text.values, "label": r.label})
+        for pid, r in data.iterrows()
+    ], ignore_index=True)
     batch_size = 1 # memory
     if args.embeddings == "ea-forum":
         model = SentenceTransformer.load(SBERT_PATH)
