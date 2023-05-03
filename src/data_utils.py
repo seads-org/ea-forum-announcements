@@ -7,8 +7,7 @@ from src.paths import datap
 
 def load_data(dataset_filename="labeled_posts_embedded.csv"):
     embed_path = datap(dataset_filename)
-    dataset = Posts(embed_path)
-    return dataset
+    return Posts(embed_path)
 
 
 class Posts(Dataset):

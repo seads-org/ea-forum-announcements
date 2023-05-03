@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 
-def get_project_root(current_directory=None, max_depth:int=20):
+def get_project_root(current_directory=None, max_depth: int = 20):
     """
     Returns the project root directory for the project at the provided directory.
 
@@ -26,24 +26,24 @@ def get_project_root(current_directory=None, max_depth:int=20):
     raise Exception("Could not find project root directory.")
 
 
-def abs_path(folder:str, path:str=None):
+def abs_path(folder: str, path: str = None):
     if path is None:
         path = ""
 
     return os.path.join(get_project_root(), folder, path)
 
 
-def datap(path:str=None):
+def datap(path: str = None):
     return abs_path("data", path)
 
 
-def modelp(path:str=None):
+def modelp(path: str = None):
     return abs_path("models", path)
 
 
-def cachep(path:str=None):
+def cachep(path: str = None):
     return abs_path("cache", path)
 
 
-def outputp(path:str=None):
+def outputp(path: str = None):
     return abs_path("output", path)

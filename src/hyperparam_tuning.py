@@ -1,4 +1,4 @@
-import os
+import argparse
 import warnings
 from datetime import date
 
@@ -35,8 +35,7 @@ class Tuner:
             test_loader = DataLoader(dataset, batch_size=batch_size, sampler=test_sampler)
 
             self.trainer.train(lr, train_loader, test_loader, trial=trial, logging=logging)
-            test_specificity, test_recall = self.trainer.test(self.trainer.model, test_loader, self.trainer.metrics,
-                                                              logging=logging)
+            test_specificity, test_recall = self.trainer.test(self.trainer.model, test_loader, logging=logging)
             folds_metrics[fold] = (test_recall + test_specificity) / 2
 
         if trial is not None:
@@ -45,10 +44,22 @@ class Tuner:
 
 
 if __name__ == "__main__":
-    dataset_size = len(pd.read_csv(datap("labeled_posts_embedded_e5base.csv")))
+    parser = argparse.ArgumentParser(
+        prog='Hyperparameter tuning script',
+        description='Hyperparameter tuning script based on cross validation where objective '
+                    'is to maximize averaged recall and specificity')
+
+    parser.add_argument('--filename', default="labeled_posts_embedded.csv",
+                        help="Filename of the .csv file with embeddings for posts")
+    parser.add_argument('--model-name', default="ea_embeddings_post_classifier", help="Filename for model saving")
+    parser.add_argument('--n-trials', default=50, help="Number of trials for Optuna to run")
+
+    args = parser.parse_args()
+
+    dataset_size = len(pd.read_csv(datap(args.filename)))
     tuner = Tuner(Trainer(), dataset_size)
 
-    model_name = f"e5base_embeddings_classifier:{str(date.today())}"
+    model_name = f"{args.model_name}:{str(date.today())}"
     study = optuna.create_study(direction="maximize",
                                 storage="sqlite:///db.sqlite3",
                                 study_name=model_name,
@@ -59,7 +70,7 @@ if __name__ == "__main__":
     # we assume pruning based on info from one fold is enough
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
-        study.optimize(tuner.cross_validation, n_trials=50)
+    study.optimize(tuner.cross_validation, n_trials=args.n_trials)
 
     trial = study.best_trial
 
@@ -67,10 +78,10 @@ if __name__ == "__main__":
     print("The best hyperparameters: {}".format(trial.params))
 
     # Retrain the best model on the whole dataset
-    trainer = Trainer(epochs=10)
+    trainer = Trainer(epochs=10, per_paragraph=True)
     lr, batch_size = trial.params["lr"], trial.params["batch_size"]
-    dataset = load_data()
+    dataset = load_data(args.filename)
     data_loader = DataLoader(dataset, batch_size=batch_size)
     train_metrics, test_metrics = trainer.train(lr, data_loader, data_loader)
 
-    torch.save(trainer.model, os.path.join(modelp(), f"{model_name}.pth"))
+    torch.save(trainer.model, modelp(f"{model_name}.pth"))
