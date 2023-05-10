@@ -1,0 +1,95 @@
+{
+  "citation": "",
+  "description": "",
+  "features": {
+    "title": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "htmlBody": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "pageUrl": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "postedAt": {
+      "dtype": "timestamp[ns, tz=UTC]",
+      "_type": "Value"
+    },
+    "baseScore": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "voteCount": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "commentCount": {
+      "dtype": "float64",
+      "_type": "Value"
+    },
+    "meta": {
+      "dtype": "bool",
+      "_type": "Value"
+    },
+    "question": {
+      "dtype": "bool",
+      "_type": "Value"
+    },
+    "url": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "tags": {
+      "feature": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "_type": "Sequence"
+    },
+    "user": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "coauthors": [
+      {
+        "_id": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "username": {
+          "dtype": "string",
+          "_type": "Value"
+        }
+      }
+    ],
+    "body": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "userId": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "_id": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "index": {
+      "dtype": "float64",
+      "_type": "Value"
+    },
+    "label": {
+      "dtype": "float64",
+      "_type": "Value"
+    },
+    "__index_level_0__": {
+      "dtype": "int64",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": ""
+}
